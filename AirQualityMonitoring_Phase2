@@ -1,0 +1,63 @@
+#include "ThingSpeak.h"
+#include <ESP8266WiFi.h>
+
+//------- WI-FI details ----------//
+char ssid[] = "XXXXXXX";  // SSID here
+char pass[] = "YYYYYYY"; // Password here
+//--------------------------------//
+
+//----------- Channel details ----------------//
+unsigned long Channel_ID = 0000000; // Channel ID
+const char * myWriteAPIKey = "ABCEDFG"; //Your write API key
+//-------------------------------------------//
+
+const int Field_Number = 1; // Don't change
+String value = "";
+int x;
+WiFiClient  client;
+
+void setup()
+{
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+  ThingSpeak.begin(client);
+  internet();
+}
+
+void loop()
+{
+  internet();
+  if (Serial.available() > 0)
+  {
+    while (Serial.available() > 0)
+    {
+      int inChar = Serial.read();
+      value += (char)inChar;
+    }
+  }
+  upload();
+}
+
+void internet()
+{
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    while (WiFi.status() != WL_CONNECTED)
+    {
+      WiFi.begin(ssid, pass);
+      delay(5000);
+    }
+  }
+}
+
+void upload()
+{
+  x = ThingSpeak.writeField(Channel_ID, Field_Number, value, myWriteAPIKey);
+  if (x != 200)
+  {
+    delay(15000);
+    upload();
+  }
+  value = "";
+}
+// ----------(c) Electronics-project-hub-------- //
